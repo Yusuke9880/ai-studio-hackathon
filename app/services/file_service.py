@@ -5,6 +5,7 @@ import os
 from config import Config
 import imghdr
 import uuid
+from PIL import Image
 
 class FileService:
     """ファイルアップロードに関するビジネスロジック"""
@@ -34,23 +35,41 @@ class FileService:
 
     def save_review_photo(self, file, review_id):
         try:
-            result = self.validate_image(file=file)
-            if result is not None:
-                return result
+            
             file_data = file.read()
+            
             file_type = imghdr.what(None, file_data)
+            
             if file_type not in ['jpg', 'jpeg', 'png', 'gif']:
                 return 'jpg, jpeg, png, gifのみ対応しています'
+            
             file.seek(0)
+            
             file_ext = os.path.splitext(file.filename)[1].lower()
+            
             if file_ext not in Config.ALLOWED_EXTENSIONS:
                 return 'jpg, jpeg, png, gifのみ対応しています'
+            
             filename = f'review_{review_id}_{uuid.uuid4().hex[:8]}{file_ext}'
-            if file.content_type not in ['image/jpeg', 'image/png', 'image/gif']:
+            
+            if file.content_type not in ['image/jpg', 'image/jpeg', 'image/png', 'image/gif']:
                 return '不正なファイル形式です'
+
+            try:
+                # 画像として開けるか試す
+                img = Image.open(file)
+                img.verify()  # 画像ファイルとして正しいか検証
+
+                # 許可された形式かチェック
+                if img.format.lower() not in ['jpg', 'jpeg', 'png', 'gif']:
+                    return '対応していない画像形式です'
+            except Exception:
+                return '画像ファイルではありません'
+
             upload_dir = Config.UPLOAD_FOLDER
             if not os.path.exists(upload_dir):
                 os.makedirs(upload_dir, exist_ok=True)
+                
             # ファイル保存
             file_path = os.path.join(upload_dir, filename)
             file.save(file_path)
