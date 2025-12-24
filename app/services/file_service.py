@@ -69,7 +69,6 @@ class FileService:
             upload_dir = Config.UPLOAD_FOLDER
             if not os.path.exists(upload_dir):
                 os.makedirs(upload_dir, exist_ok=True)
-                
             # ファイル保存
             file_path = os.path.join(upload_dir, filename)
             file.save(file_path)
