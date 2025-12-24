@@ -155,13 +155,13 @@ async function loadReviews() {
 
             // XSS脆弱性（review_contentをエスケープせずにHTMLに挿入）
             const reviewHtml = `
-                <div class="review-item" data-review-id="${review.review_id}">
+                <div class="review-item" data-review-id="${escapeHtml(review.review_id)}">
                     <div class="review-header">
-                        <span class="reviewer-name">${review.user_name}</span>
-                        <span class="review-date">${dateStr}</span>
+                        <span class="reviewer-name">${escapeHtml(review.user_name)}</span>
+                        <span class="review-date">${escapeHtml(dateStr)}</span>
                     </div>
-                    <div class="review-rating">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</div>
-                    <div class="review-text">${review.review_content}</div>
+                    <div class="review-rating">${escapeHtml('★'.repeat(review.rating))}${escapeHtml('☆'.repeat(5 - review.rating))}</div>
+                    <div class="review-text">${escapeHtml(review.review_content)}</div>
                     ${photoHtml}
                     ${deleteButtonHtml}
                 </div>
