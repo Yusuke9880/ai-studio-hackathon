@@ -106,14 +106,14 @@ class ReviewService:
         if photo and photo.filename:
             try:
                 photo_filename = self.file_service.save_review_photo(photo, review_id)
-                self.review_repo.update_photo_filename(review_id, photo_filename)
-            except Exception as e:
-                print(f"画像保存エラー: {e}")
-                # トランザクション処理不備
-                # 画像保存失敗時にレビューをロールバックしていない
-                # 本来はトランザクションを使って、画像保存失敗時はレビューも削除すべき
-                # 画像保存失敗してもレビューは作成済みなので成功として返す
-
+                if not photo_filename:
+                    self.review_repo.delete(review_id=review_id)
+                    return {'success': False, 'error': '画像保存に失敗しました。'}
+                else:
+                    self.review_repo.update_photo_filename(review_id, photo_filename)
+            except:
+                self.review_repo.delete(review_id=review_id)
+                return {'success': False, 'error': '画像保存に失敗しました。'}
         return {
             'success': True,
             'review_id': review_id,
